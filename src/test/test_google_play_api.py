@@ -1,10 +1,8 @@
+import os
 import json
 import time
 import unittest
 from googleplay_api.googleplay import GooglePlayAPI, LoginError
-
-
-# pip install git+git://github.com/NeroBurner/googleplay-api@master
 
 
 class TestGooglePlayApi(unittest.TestCase):
@@ -12,17 +10,22 @@ class TestGooglePlayApi(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        with open('../../google-play-access.json') as access:
-            details = json.load(access)
+        if os.path.exists('../../google-play-access.json'):
+            with open('../../google-play-access.json') as access:
+                details = json.load(access)
+
+        else:
+            details = dict()
 
         api = TestGooglePlayApi.api
-        api.androidId = details.get('androidId')
+        api.androidId = os.environ.get('ANDROID_ID', details.get('androidId'))
 
         last_error = None
 
         for _ in xrange(10):
             try:
-                api.login(details.get('username'), details.get('password'))
+                api.login(email=os.environ.get('GOOGLE_USERNAME', details.get('username')),
+                          password=os.environ.get('GOOGLE_PASSWORD', details.get('password')))
                 break
 
             except LoginError as err:

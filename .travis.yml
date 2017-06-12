@@ -2,7 +2,7 @@ language: python
 python:
 - '2.7'
 install: pip install -r requirements.txt
-script: python -m unittest discover -s src/test -t src/test
+script: python -m unittest discover -s src/test -t src/test -v
 env:
   global:
   - secure: Y53K98+ezo/doSpBf8aIdjo2fypVe2U5gL713MBmZKSHDGSUOjB/IFoFtw8yJy+lUEeQT0MjidLxr8QQJRtqrbbH9X3aPgViYIE2UpkKvfKcz2ugEZY56KKeVJsUrta/ZUEeQycHuL2sTG68WK9KcEi8lAkrVxKDqkwlB0LPj+h9Hbafrlkco7zaUtTJmAGC4AWkoYBfQL09GPenSm5TNMOV19He/8ePBAIbiQNGtd0YbPX7U/iRxnBLQ+FKaD9S+QfBTDaav7H6nW5U+zGTqdJEfiS2ZS+CJpLBSOHxDhtYKT1WmVT+c+gCgsSDlFVCVYXOHOxFzAibxFRNw/4c3cB6/eM06M8s+EhuDx/pOdIsUA6rgdsjGt4qsrmtBFBzw8R8Nyuul2OfpOwEYtAFoPAak4uUe8yGuJ7d4Nv0Tjpog4iU2cUChEc0DVSqMLPUnb71JkpR/SVJYGNfq/6rfx4/7IfYSs0e3wDDyrVRyV/rCc6hRCQjJg2WI5RKirmv7lSIrRS9+I6sfm6RoEn3LuUahJbvy4a+LPJAJK7WHQqJMF7NVUtctkqZ/IX0ojULTeQvTaayy7I1hi7OBnPwJC8RE+MFl6Je+BeSVvSlPPgdjEdE7sQT/6x9yPZn/QekdOhxaKb2sDFf5iOrZfIsUKGj6g/NzGX2A//Ws898Wfc=

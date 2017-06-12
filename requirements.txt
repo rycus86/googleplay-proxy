@@ -1,1 +1,1 @@
--e git+git://github.com/NeroBurner/googleplay-api@master
+-e git+git://github.com/NeroBurner/googleplay-api@master#egg=googleplay_api

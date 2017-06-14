@@ -8,13 +8,9 @@ class ApiClientTest(unittest.TestCase):
     def setUp(self):
         details = self._get_access_details()
 
-        if details:
-            self.api = ApiClient(android_id=details.get('androidId'),
-                                 username=details.get('username'),
-                                 password=details.get('password'))
-
-        else:
-            self.fail('Missing API access details')
+        self.api = ApiClient(android_id=os.environ.get('ANDROID_ID', details.get('androidId')),
+                             username=os.environ.get('GOOGLE_USERNAME', details.get('username')),
+                             password=os.environ.get('GOOGLE_PASSWORD', details.get('password')))
 
     @staticmethod
     def _get_access_details():

@@ -10,12 +10,7 @@ class TestGooglePlayApi(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        if os.path.exists('../../google-play-access.json'):
-            with open('../../google-play-access.json') as access:
-                details = json.load(access)
-
-        else:
-            details = dict()
+        details = TestGooglePlayApi._get_access_details()
 
         api = TestGooglePlayApi.api
         api.androidId = os.environ.get('ANDROID_ID', details.get('androidId'))
@@ -34,6 +29,17 @@ class TestGooglePlayApi(unittest.TestCase):
 
         else:
             raise last_error
+
+    @staticmethod
+    def _get_access_details():
+        directory = os.path.dirname(__file__) or '.'
+        path = os.path.join(os.path.abspath(directory), '../../google-play-access.json')
+
+        if os.path.exists(path):
+            with open(path) as access:
+                return json.load(access)
+
+        return dict()
 
     def test_search(self):
         results = self.api.search('hu.rycus')
@@ -87,7 +93,7 @@ class TestGooglePlayApi(unittest.TestCase):
                             msg='Result document does not contain the %s field' % expected)
 
         for image in document.image:
-            for expected in ('imageType', 'imageUrl', 'Dimension', 'positionInSequence'):
+            for expected in ('imageType', 'imageUrl', 'dimension', 'positionInSequence'):
                 self.assertTrue(hasattr(image, expected),
                                 msg='Image does not contain the %s field' % expected)
 

@@ -1,92 +1,167 @@
 import time
 import logging
-from googleplay_api.googleplay import GooglePlayAPI, LoginError
+from threading import Lock
+from functools import wraps
+from googleplay_api.googleplay import GooglePlayAPI, LoginError, DecodeError
 
-
+logging.basicConfig(format='%(asctime)s [%(levelname)s] %(module)s.%(funcName)s - %(message)s')
 logger = logging.getLogger('googleplay-proxy')
+logger.setLevel(logging.INFO)
+
+
+def _with_login(method):
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        if not self.is_logged_in():
+            self.login()
+
+        try:
+            return method(self, *args, **kwargs)
+
+        except DecodeError as err:
+            logger.warn('Failed to decode the response, possible authentication token issue: %s', err)
+
+            self.login()
+            return method(self, *args, **kwargs)
+
+    return wrapper
+
+
+class ApiLoginException(BaseException):
+    def __init__(self, cause):
+        super(ApiLoginException, self).__init__(cause)
+
+
+class ApiItem(dict):
+    def __setattr__(self, key, value):
+        self[key] = value
 
 
 class ApiClient(object):
+    def __init__(self, android_id=None, username=None, password=None,
+                 auth_token=None, proxy=None, max_login_retries=10, language=None, debug=False):
 
-    def __init__(self, androidId=None, lang=None, debug=False):
-        self._api = GooglePlayAPI(androidId, lang, debug)
+        self._api = GooglePlayAPI(android_id, language, debug)
 
-    def login(self, email=None, password=None, authSubToken=None, proxy=None, max_retries=10):
-        logger.info('Executing login')
+        self._username = username
+        self._password = password
+        self._auth_token = auth_token
+        self._proxy = proxy
+        self._max_login_retries = max_login_retries
 
-        login_error = None
+        self._login_lock = Lock()
+        self._logged_in = False
 
-        for _ in xrange(max_retries):
-            try:
-                self._api.login(email, password, authSubToken, proxy)
-                break
+    def is_logged_in(self):
+        return self._logged_in
 
-            except LoginError as err:
-                login_error = err
-                time.sleep(0.2)
+    def login(self):
+        self._logged_in = False
 
-        else:
-            logger.error('Failed to log in: %s', login_error)
-            raise login_error
+        with self._login_lock:
+            logger.info('Executing login')
 
-    def search(self, query):
-        logger.info('Searching for %s', query)
+            login_error = None
+
+            for _ in xrange(self._max_login_retries):
+                try:
+                    self._api.login(self._username, self._password, self._auth_token, self._proxy)
+                    self._logged_in = True
+                    break
+
+                except LoginError as err:
+                    login_error = err
+                    time.sleep(0.2)
+
+            else:
+                logger.error('Failed to log in: %s', login_error)
+                raise ApiLoginException(login_error)
+
+    @_with_login
+    def search(self, package_prefix):
+        logger.info('Searching for %s', package_prefix)
 
         results = list()
-        response = self._api.search(query)
-        
+        response = self._api.search(package_prefix)
+
         if len(response.doc):
             document = response.doc[0]
 
             for child in document.child:
-                item = {
-                    key: getattr(child, key)
-                    for key in ('title', 'creator', 'shareUrl')
-                }
-                
-                images = list()
+                package_name = child.details.appDetails.packageName
 
-                for image in child.image:
-                    images.append({
-                        'type': image.imageType,
-                        'url': image.imageUrl
-                    })
+                if not package_name.startswith(package_prefix):
+                    continue
 
-                details = child.details.appDetails
-
-                item.update({
-                    key: getattr(details, key)
-                    for key in ('packageName', 'uploadDate', 'numDownloads', 'versionCode')
-                })
-
-                item['ratings'] = {
-                    key: getattr(child.aggregateRating, key)
-                    for key in ('starRating', 'ratingsCount', 'commentCount',
-                                'oneStarRatings', 'twoStarRatings', 'threeStarRatings',
-                                'fourStarRatings', 'fiveStarRatings')
-                }
+                item = self._extract_api_item(child)
 
                 results.append(item)
 
         return results
 
+    @_with_login
     def get_details(self, package_name):
         logger.info('Fetching details for %s', package_name)
 
-        result = dict()
-
         details = self._api.details(package_name)
-        # TODO error handling
+        return self._extract_api_item(details.docV2)
 
-        document = details.docV2
+    @staticmethod
+    def _extract_api_item(api_object):
+        details = api_object.details.appDetails
 
-        result.update({
-            key: getattr(details, key)
-            for key in ('title', 'creator', 'shareUrl', 'descriptionHtml')
-        })
+        item = ApiItem()
 
-        for image in document.image:
-            pass
+        item.package_name = details.packageName
+        item.title = api_object.title
+        item.creator = api_object.creator
+        item.upload_date = details.uploadDate
+        item.num_downloads = details.numDownloads
+        item.version_code = details.versionCode
+        item.share_url = api_object.shareUrl
 
-        return result
+        if hasattr(api_object, 'descriptionHtml'):
+            item.description_html = api_object.descriptionHtml
 
+        if hasattr(details, 'developerName'):
+            item.developer_name = details.developerName
+        if hasattr(details, 'developerWebsite'):
+            item.developer_website = details.developerWebsite
+        if hasattr(details, 'versionString'):
+            item.version_string = details.versionString
+        if hasattr(details, 'recentChangesHtml'):
+            item.recent_changes_html = details.recentChangesHtml
+
+        images = list()
+
+        for image_object in api_object.image:
+            image = ApiItem()
+
+            image.type = image_object.imageType
+            image.url = image_object.imageUrl
+
+            if hasattr(image_object, 'dimension'):
+                image.width = image_object.dimension.width
+                image.height = image_object.dimension.height
+
+            if hasattr(image_object, 'positionInSequence'):
+                image.position = image_object.positionInSequence
+
+            images.append(image)
+
+        item.images = images
+
+        item.ratings = {
+            'stars': api_object.aggregateRating.starRating,
+            'total': api_object.aggregateRating.ratingsCount,
+            'comments': api_object.aggregateRating.commentCount,
+            'count': {
+                1: api_object.aggregateRating.oneStarRatings,
+                2: api_object.aggregateRating.twoStarRatings,
+                3: api_object.aggregateRating.threeStarRatings,
+                4: api_object.aggregateRating.fourStarRatings,
+                5: api_object.aggregateRating.fiveStarRatings
+            }
+        }
+
+        return item

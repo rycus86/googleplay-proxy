@@ -5,7 +5,7 @@ import unittest
 from googleplay_api.googleplay import GooglePlayAPI, LoginError
 
 
-class TestGooglePlayApi(unittest.TestCase):
+class GooglePlayApiTest(unittest.TestCase):
     api = GooglePlayAPI()
 
     @classmethod

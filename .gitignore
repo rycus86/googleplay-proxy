@@ -2,3 +2,4 @@ google-play-access.json
 .idea/
 *.pyc
 .coverage
+coverage.xml

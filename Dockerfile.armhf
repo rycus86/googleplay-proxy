@@ -2,7 +2,7 @@ FROM rycus86/armhf-alpine-qemu
 
 RUN apk add --no-cache python py2-pip git ca-certificates
 
-ADD src/main /app
+ADD src /app
 ADD requirements.txt /app
 
 WORKDIR /app

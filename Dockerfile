@@ -2,7 +2,7 @@ FROM alpine
 
 RUN apk add --no-cache python py2-pip git ca-certificates
 
-ADD src/main /app
+ADD src /app
 ADD requirements.txt /app
 
 WORKDIR /app

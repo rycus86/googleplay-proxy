@@ -31,7 +31,7 @@ class AppTest(unittest.TestCase):
         return dict()
 
     def test_search_applications(self):
-        response = self.client.get('hu.rycus')
+        response = self.client.get('/search/hu.rycus')
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content_type, 'application/json')
@@ -75,7 +75,7 @@ class AppTest(unittest.TestCase):
                 self.assertGreaterEqual(count, 0)
 
     def test_get_application_details(self):
-        response = self.client.get('hu.rycus.tweetwear')
+        response = self.client.get('/details/hu.rycus.tweetwear')
         
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content_type, 'application/json')

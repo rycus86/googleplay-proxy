@@ -14,7 +14,7 @@ def get_api_client():
 
 def get_access_details():
     directory = os.path.dirname(__file__) or '.'
-    path = os.path.join(os.path.abspath(directory), '../../google-play-access.json')
+    path = os.path.join(os.path.abspath(directory), '../google-play-access.json')
 
     if os.path.exists(path):
         with open(path) as access:

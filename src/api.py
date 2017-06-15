@@ -93,7 +93,7 @@ class ApiClient(object):
                 if not package_name.startswith(package_prefix):
                     continue
 
-                item = self._extract_api_item(child)
+                item = self._extract_api_item(child, simple=True)
 
                 results.append(item)
 
@@ -104,10 +104,10 @@ class ApiClient(object):
         logger.info('Fetching details for %s', package_name)
 
         details = self._api.details(package_name)
-        return self._extract_api_item(details.docV2)
+        return self._extract_api_item(details.docV2, simple=False)
 
     @staticmethod
-    def _extract_api_item(api_object):
+    def _extract_api_item(api_object, simple):
         details = api_object.details.appDetails
 
         item = ApiItem()
@@ -120,16 +120,11 @@ class ApiClient(object):
         item.version_code = details.versionCode
         item.share_url = api_object.shareUrl
 
-        if hasattr(api_object, 'descriptionHtml'):
+        if not simple:
             item.description_html = api_object.descriptionHtml
-
-        if hasattr(details, 'developerName'):
             item.developer_name = details.developerName
-        if hasattr(details, 'developerWebsite'):
             item.developer_website = details.developerWebsite
-        if hasattr(details, 'versionString'):
             item.version_string = details.versionString
-        if hasattr(details, 'recentChangesHtml'):
             item.recent_changes_html = details.recentChangesHtml
 
         images = list()
@@ -140,11 +135,9 @@ class ApiClient(object):
             image.type = image_object.imageType
             image.url = image_object.imageUrl
 
-            if hasattr(image_object, 'dimension'):
+            if not simple:
                 image.width = image_object.dimension.width
                 image.height = image_object.dimension.height
-
-            if hasattr(image_object, 'positionInSequence'):
                 image.position = image_object.positionInSequence
 
             images.append(image)

@@ -1,28 +1,12 @@
-import os
-import json
 import unittest
+from unittest_helper import get_api_client
 
 from api import ApiClient, ApiLoginException
 
 
 class ApiClientTest(unittest.TestCase):
     def setUp(self):
-        details = self._get_access_details()
-
-        self.api = ApiClient(android_id=os.environ.get('ANDROID_ID', details.get('androidId')),
-                             username=os.environ.get('GOOGLE_USERNAME', details.get('username')),
-                             password=os.environ.get('GOOGLE_PASSWORD', details.get('password')))
-
-    @staticmethod
-    def _get_access_details():
-        directory = os.path.dirname(__file__) or '.'
-        path = os.path.join(os.path.abspath(directory), '../../google-play-access.json')
-
-        if os.path.exists(path):
-            with open(path) as access:
-                return json.load(access)
-
-        return dict()
+        self.api = get_api_client()
 
     def test_login(self):
         self.api.login()

@@ -17,7 +17,7 @@ script:
   - docker run --rm --privileged multiarch/qemu-user-static:register --reset
   - docker build -t googleplay-proxy:$DOCKER_TAG -f $DOCKERFILE .
   # python tests
-  - PYTHONPATH=src/main python -m coverage run --source=src/main -m unittest discover -s src/test -v
+  - PYTHONPATH=src/main python -m coverage run --branch --source=src/main -m unittest discover -s src/test -v
 after_success:
   # coverage reports
   - coveralls

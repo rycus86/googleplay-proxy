@@ -1,7 +1,7 @@
 import os
-import json
 import time
 import unittest
+from unittest_helper import get_access_details
 
 from googleplay_api.googleplay import GooglePlayAPI, LoginError
 
@@ -11,7 +11,7 @@ class GooglePlayApiTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        details = GooglePlayApiTest._get_access_details()
+        details = get_access_details()
 
         api = GooglePlayApiTest.api
         api.androidId = os.environ.get('ANDROID_ID', details.get('androidId'))
@@ -31,17 +31,6 @@ class GooglePlayApiTest(unittest.TestCase):
         else:
             raise last_error
 
-    @staticmethod
-    def _get_access_details():
-        directory = os.path.dirname(__file__) or '.'
-        path = os.path.join(os.path.abspath(directory), '../../google-play-access.json')
-
-        if os.path.exists(path):
-            with open(path) as access:
-                return json.load(access)
-
-        return dict()
-
     def test_search(self):
         results = self.api.search('hu.rycus')
 
@@ -54,32 +43,7 @@ class GooglePlayApiTest(unittest.TestCase):
         self.assertGreater(len(document.child), 0)
 
         for child in document.child:
-            for expected in ('title', 'creator', 'image', 'details', 'aggregateRating', 'shareUrl'):
-                self.assertTrue(hasattr(child, expected),
-                                msg='Result document does not contain the %s field' % expected)
-
-            for image in child.image:
-                for expected in ('imageType', 'imageUrl'):
-                    self.assertTrue(hasattr(image, expected),
-                                    msg='Image does not contain the %s field' % expected)
-
-            details = child.details
-
-            self.assertTrue(hasattr(details, 'appDetails'), msg='Result does not contain the appDetails object')
-
-            app_details = details.appDetails
-
-            for expected in ('packageName', 'uploadDate', 'numDownloads', 'versionCode'):
-                self.assertTrue(hasattr(app_details, expected),
-                                msg='App details do not contain the %s field' % expected)
-
-            rating = child.aggregateRating
-
-            for expected in ('starRating', 'ratingsCount', 'commentCount',
-                             'oneStarRatings', 'twoStarRatings', 'threeStarRatings',
-                             'fourStarRatings', 'fiveStarRatings'):
-                self.assertTrue(hasattr(rating, expected),
-                                msg='App rating does not contain the %s field' % expected)
+            self._verify_item(child, simple=True)
 
     def test_details(self):
         details = self.api.details('hu.rycus.watchface.triangular')
@@ -88,34 +52,49 @@ class GooglePlayApiTest(unittest.TestCase):
 
         document = details.docV2
 
-        for expected in ('title', 'creator', 'image', 'details', 'aggregateRating', 'shareUrl',
-                         'descriptionHtml'):
-            self.assertTrue(hasattr(document, expected),
+        self._verify_item(document, simple=False)
+            
+    def _verify_item(self, item, simple):
+        for expected in ('title', 'creator', 'image', 'details', 'aggregateRating', 'shareUrl'):
+            self.assertTrue(hasattr(item, expected),
                             msg='Result document does not contain the %s field' % expected)
 
-        for image in document.image:
-            for expected in ('imageType', 'imageUrl', 'dimension', 'positionInSequence'):
+        if not simple:
+            self.assertTrue(hasattr(item, 'descriptionHtml'),
+                            msg='Result document does not contain the descriptionHtml field')
+
+        for image in item.image:
+            for expected in ('imageType', 'imageUrl'):
                 self.assertTrue(hasattr(image, expected),
                                 msg='Image does not contain the %s field' % expected)
 
-            dimension = image.Dimension
+            if not simple:
+                for expected in ('dimension', 'positionInSequence'):
+                    self.assertTrue(hasattr(image, expected),
+                                    msg='Image does not contain the %s field' % expected)
 
-            for expected in ('width', 'height'):
-                self.assertTrue(hasattr(dimension, expected),
-                                msg='Image dimension does not contain the %s field' % expected)
+                dimension = image.dimension
 
-        details = document.details
+                for expected in ('width', 'height'):
+                    self.assertTrue(hasattr(dimension, expected),
+                                    msg='Image dimension does not contain the %s field' % expected)
+
+        details = item.details
 
         self.assertTrue(hasattr(details, 'appDetails'), msg='Result does not contain the appDetails object')
 
         app_details = details.appDetails
 
-        for expected in ('packageName', 'uploadDate', 'numDownloads', 'versionCode',
-                         'developerName', 'versionString', 'developerWebsite', 'recentChangesHtml'):
+        for expected in ('packageName', 'uploadDate', 'numDownloads', 'versionCode'):
             self.assertTrue(hasattr(app_details, expected),
                             msg='App details do not contain the %s field' % expected)
 
-        rating = document.aggregateRating
+        if not simple:
+            for expected in ('developerName', 'versionString', 'developerWebsite', 'recentChangesHtml'):
+                self.assertTrue(hasattr(app_details, expected),
+                                msg='App details do not contain the %s field' % expected)
+
+        rating = item.aggregateRating
 
         for expected in ('starRating', 'ratingsCount', 'commentCount',
                          'oneStarRatings', 'twoStarRatings', 'threeStarRatings',

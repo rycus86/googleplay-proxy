@@ -2,6 +2,7 @@ import os
 import json
 import time
 import unittest
+
 from googleplay_api.googleplay import GooglePlayAPI, LoginError
 
 
@@ -10,9 +11,9 @@ class GooglePlayApiTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        details = TestGooglePlayApi._get_access_details()
+        details = GooglePlayApiTest._get_access_details()
 
-        api = TestGooglePlayApi.api
+        api = GooglePlayApiTest.api
         api.androidId = os.environ.get('ANDROID_ID', details.get('androidId'))
 
         last_error = None

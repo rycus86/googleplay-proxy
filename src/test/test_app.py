@@ -9,11 +9,11 @@ class AppTest(unittest.TestCase):
     
     @classmethod
     def setUpClass(cls):
-        details = self._get_access_details()
+        details = AppTest._get_access_details()
         
-        app.api = ApiClient(android_id=os.environ.get('ANDROID_ID', details.get('androidId')),
-                            username=os.environ.get('GOOGLE_USERNAME', details.get('username')),
-                            password=os.environ.get('GOOGLE_PASSWORD', details.get('password')))
+        app.api = app.ApiClient(android_id=os.environ.get('ANDROID_ID', details.get('androidId')),
+                                username=os.environ.get('GOOGLE_USERNAME', details.get('username')),
+                                password=os.environ.get('GOOGLE_PASSWORD', details.get('password')))
 
     def setUp(self):
         app.app.testing = True

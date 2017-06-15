@@ -10,7 +10,7 @@ cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 api = ApiClient(android_id=os.environ.get('ANDROID_ID'),
                 username=os.environ.get('GOOGLE_USERNAME'),
                 password=os.environ.get('GOOGLE_PASSWORD'),
-                max_login_retries=int(os.environ.get('MAX_LOGIN_RETRIES', '10'))
+                max_login_retries=int(os.environ.get('MAX_LOGIN_RETRIES', '10')))
 
 logging.basicConfig(format='%(asctime)s [%(levelname)s] %(module)s.%(funcName)s - %(message)s')
 logger = logging.getLogger('googleplay-proxy')

@@ -6,11 +6,10 @@ import app
 
 
 class AppTest(unittest.TestCase):
-    
     @classmethod
     def setUpClass(cls):
         details = AppTest._get_access_details()
-        
+
         app.api = app.ApiClient(android_id=os.environ.get('ANDROID_ID', details.get('androidId')),
                                 username=os.environ.get('GOOGLE_USERNAME', details.get('username')),
                                 password=os.environ.get('GOOGLE_PASSWORD', details.get('password')))
@@ -38,7 +37,7 @@ class AppTest(unittest.TestCase):
         self.assertEqual(response.charset, 'utf-8')
 
         applications = json.loads(response.data)
-        
+
         self.assertIsNotNone(applications)
         self.assertGreater(len(applications), 0)
 
@@ -69,14 +68,14 @@ class AppTest(unittest.TestCase):
             self.assertEqual(len(item.get('ratings').get('count')), 5)
 
             for star, count in item.get('ratings').get('count').items():
-                self.assertGreaterEqual(star, 1)
-                self.assertLessEqual(star, 5)
+                self.assertGreaterEqual(int(star), 1)
+                self.assertLessEqual(int(star), 5)
 
-                self.assertGreaterEqual(count, 0)
+                self.assertGreaterEqual(int(count), 0)
 
     def test_get_application_details(self):
         response = self.client.get('/details/hu.rycus.tweetwear')
-        
+
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content_type, 'application/json')
         self.assertEqual(response.charset, 'utf-8')
@@ -120,8 +119,7 @@ class AppTest(unittest.TestCase):
         self.assertEqual(len(details.get('ratings').get('count')), 5)
 
         for star, count in details.get('ratings').get('count').items():
-            self.assertGreaterEqual(star, 1)
-            self.assertLessEqual(star, 5)
+            self.assertGreaterEqual(int(star), 1)
+            self.assertLessEqual(int(star), 5)
 
-            self.assertGreaterEqual(count, 0)
-
+            self.assertGreaterEqual(int(count), 0)

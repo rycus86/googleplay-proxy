@@ -15,15 +15,10 @@ before_script:
 script:
   # python tests
   - PYTHONPATH=src python -m coverage run --branch --source=src -m unittest discover -s tests -v
+after_success:
   # docker build
   - docker run --rm --privileged multiarch/qemu-user-static:register --reset
   - docker build -t googleplay-proxy:$DOCKER_TAG -f $DOCKERFILE .
-after_success:
-  # coverage reports
-  - coveralls
-  - python -m coverage report -m
-  - python -m coverage xml
-  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
   # push docker image
   - >
     if [ "$DOCKER_PUSH" == "yes" ]; then
@@ -33,6 +28,11 @@ after_success:
     else
       echo 'Not pushing to Docker Hub'
     fi
+  # coverage reports
+  - coveralls
+  - python -m coverage report -m
+  - python -m coverage xml
+  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
 env:
   matrix:
   - DOCKER_TAG=latest DOCKERFILE=Dockerfile

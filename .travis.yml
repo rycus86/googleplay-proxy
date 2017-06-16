@@ -32,11 +32,17 @@ after_success:
   - coveralls
   - python -m coverage report -m
   - python -m coverage xml
-  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
+  - >
+    if [ "$SKIP_CC" != "true" ]; then
+      ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
+      echo 'Test report submitted'
+    else
+      echo 'Not submitting test report'
+    fi
 env:
   matrix:
   - DOCKER_TAG=latest DOCKERFILE=Dockerfile
-  - DOCKER_TAG=armhf  DOCKERFILE=Dockerfile.armhf DOCKER_PUSH=yes
+  - DOCKER_TAG=armhf  DOCKERFILE=Dockerfile.armhf DOCKER_PUSH=yes SKIP_CC=true
   global:
   - secure: Y53K98+ezo/doSpBf8aIdjo2fypVe2U5gL713MBmZKSHDGSUOjB/IFoFtw8yJy+lUEeQT0MjidLxr8QQJRtqrbbH9X3aPgViYIE2UpkKvfKcz2ugEZY56KKeVJsUrta/ZUEeQycHuL2sTG68WK9KcEi8lAkrVxKDqkwlB0LPj+h9Hbafrlkco7zaUtTJmAGC4AWkoYBfQL09GPenSm5TNMOV19He/8ePBAIbiQNGtd0YbPX7U/iRxnBLQ+FKaD9S+QfBTDaav7H6nW5U+zGTqdJEfiS2ZS+CJpLBSOHxDhtYKT1WmVT+c+gCgsSDlFVCVYXOHOxFzAibxFRNw/4c3cB6/eM06M8s+EhuDx/pOdIsUA6rgdsjGt4qsrmtBFBzw8R8Nyuul2OfpOwEYtAFoPAak4uUe8yGuJ7d4Nv0Tjpog4iU2cUChEc0DVSqMLPUnb71JkpR/SVJYGNfq/6rfx4/7IfYSs0e3wDDyrVRyV/rCc6hRCQjJg2WI5RKirmv7lSIrRS9+I6sfm6RoEn3LuUahJbvy4a+LPJAJK7WHQqJMF7NVUtctkqZ/IX0ojULTeQvTaayy7I1hi7OBnPwJC8RE+MFl6Je+BeSVvSlPPgdjEdE7sQT/6x9yPZn/QekdOhxaKb2sDFf5iOrZfIsUKGj6g/NzGX2A//Ws898Wfc=
   - secure: IRDFso5obsYy79n5ms1+R8q1A5Zsj9B6Mb6Wlilsr1dxp/bHq6SmtBX/d1gt7ZDCd+n7E7Kr+G3XpyzbNbJWsKVaoLXhEZpRFSKxrVEPZKzsDTbPCTKmqtwv0X9wTMHqtLrYZejP0V+2hmcM0XQKwlBI0Tg6FNIXnzzgBjB27FUfRH7Hr6frMnDAfsf126bz9uxeipKaQFELMkFVMQTsZPgO27C1tiW1krxki1Qir59/6iWPj/G5L8GA2meIbRa4fLbjIeAVhTzgal2sE5TZbOubNxt7fPYlHThoV+JgOXQo83R2zCVn3Dhz/DW2DzfgGqVC5JbEmtKdG6RT0zKrr9Gr+g3US3SHwwlm75qM0bL7hhL/FTllWc9RNXCYI1/E1WYPVVdZ+pZDWp+6t1idEVZ6OJS30JV4ix+UAGMLeVqCMf1+NpXcVrUZKiqelkY71l1IFdAOm036Uy8EPP1j8LBIJqaFxLb7d2vftXMOdIxURPbg7gUQ7ajzx3LPmILShnuUr9W9kvAcbeT5SdU8Wio1zYmX3EAC8bDM5KUCFHNOtkrd4l1fEIYrRJNI1MSHIMUdOxCSM5rATEtf5vitIrfX9Xb0kYZQ9mL3Mb1mk76AuKxksRTDdNEDBR1KgdRTvUndhS0c31m6jeYnCgnhvbksqzk+tYmow71ljv1dqLc=

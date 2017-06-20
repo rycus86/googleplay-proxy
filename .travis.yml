@@ -9,6 +9,14 @@ install:
   - pip install -r requirements.txt
   - pip install coveralls
 before_script:
+  - >
+    for ALTERNATIVE_DOCKERFILE in Dockerfile.*; do
+      DIFF_LINES=$(diff -y --suppress-common-lines Dockerfile $ALTERNATIVE_DOCKERFILE | wc -l)
+      if [ "$DIFF_LINES" -ne "1" ]; then
+        echo "$ALTERNATIVE_DOCKERFILE has $DIFF_LINES lines different then the main Dockerfile, expected only one."
+        exit 1
+      fi
+    done
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
   - chmod +x ./cc-test-reporter
   - ./cc-test-reporter before-build

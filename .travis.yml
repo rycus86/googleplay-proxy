@@ -29,7 +29,7 @@ after_success:
   - docker build -t googleplay-proxy:$DOCKER_TAG -f $DOCKERFILE .
   # push docker image
   - >
-    if [ "$DOCKER_PUSH" == "yes" ]; then
+    if [ "$DOCKER_PUSH" == "yes" ] && [ "$TRAVIS_BRANCH" == "master" ]; then
       docker login -u="rycus86" -p="$DOCKER_PASSWORD"
       docker tag googleplay-proxy:$DOCKER_TAG rycus86/googleplay-proxy:$DOCKER_TAG
       docker push rycus86/googleplay-proxy:$DOCKER_TAG

@@ -5,6 +5,9 @@ from api import ApiClient, ApiLoginException
 
 
 def get_api_client(unauthorized=False):
+    if os.environ.get('INTEGRATION_TESTS'):
+        return get_real_api_client()
+
     class MockResponse(dict):
         def __getattr__(self, item):
             return self.get(item)
@@ -14,17 +17,46 @@ def get_api_client(unauthorized=False):
     class MockApi(object):
         def search(self, prefix):
             return _md({
-                'doc': list()
+                'doc': [
+                    _md({
+                        'child': [
+                            self._create_mock('%s.app1' % prefix),
+                            self._create_mock('%s.app2' % prefix),
+                            self._create_mock('%s.app3' % prefix)
+                        ]
+                    })
+                ]
             })
 
         def details(self, package):
             return _md({
-                'docV2': _md({
-                    'details': _md({
-                        'appDetails': _md()
-                    }),
-                    'image': list(),
-                    'aggregateRating': _md()
+                'docV2': self._create_mock(package)
+            })
+
+        def _create_mock(self, package):
+            return _md({
+                'details': _md({
+                    'appDetails': _md({
+                        'packageName': package
+                    })
+                }),
+                'image': [
+                    _md({
+                        'type': 1,
+                        'imageUrl': 'http://sample.com/image-1.png',
+                        'dimension': _md({
+                            'width': 120,
+                            'height': 100,
+                            'position': 1
+                        })
+                    })
+                ],
+                'aggregateRating': _md({
+                    'oneStarRatings': 10,
+                    'twoStarRatings': 20,
+                    'threeStarRatings': 30,
+                    'fourStarRatings': 40,
+                    'fiveStarRatings': 50
                 })
             })
 

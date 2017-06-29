@@ -6,6 +6,8 @@ from unittest_helper import get_access_details
 from googleplay_api.googleplay import GooglePlayAPI, LoginError
 
 
+@unittest.skipUnless(os.environ.get('INTEGRATION_TESTS'), 
+                     'Integration tests are skipped')
 class GooglePlayApiTest(unittest.TestCase):
     api = GooglePlayAPI()
 

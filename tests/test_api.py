@@ -14,7 +14,7 @@ class ApiClientTest(unittest.TestCase):
         self.assertTrue(self.api.is_logged_in(), msg='Failed to log in')
 
     def test_login_failure(self):
-        api = ApiClient(android_id='FAKE_ID', username='unknown@address.com', password='1234', max_login_retries=3)
+        api = get_api_client(unauthorized=True)
 
         try:
             api.login()

@@ -6,7 +6,7 @@ from unittest_helper import get_access_details
 from googleplay_api.googleplay import GooglePlayAPI, LoginError
 
 
-@unittest.skipUnless(os.environ.get('INTEGRATION_TESTS'), 
+@unittest.skipUnless(os.environ.get('INTEGRATION_TESTS'),
                      'Integration tests are skipped')
 class GooglePlayApiTest(unittest.TestCase):
     api = GooglePlayAPI()
@@ -55,7 +55,7 @@ class GooglePlayApiTest(unittest.TestCase):
         document = details.docV2
 
         self._verify_item(document, simple=False)
-            
+
     def _verify_item(self, item, simple):
         for expected in ('title', 'creator', 'image', 'details', 'aggregateRating', 'shareUrl'):
             self.assertTrue(hasattr(item, expected),

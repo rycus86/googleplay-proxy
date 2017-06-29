@@ -64,7 +64,7 @@ class AppTest(unittest.TestCase):
             self._verify_image(image, simple)
 
         self._verify_ratings(item)
-        
+
     def _verify_basics(self, item):
         self.assertIn('title', item)
         self.assertIn('creator', item)

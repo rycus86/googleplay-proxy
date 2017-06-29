@@ -1,7 +1,7 @@
 import unittest
 from unittest_helper import get_api_client
 
-from api import ApiClient, ApiLoginException
+from api import ApiLoginException
 
 
 class ApiClientTest(unittest.TestCase):

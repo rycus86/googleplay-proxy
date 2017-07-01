@@ -1,7 +1,7 @@
 import os
 import json
 
-from api import ApiClient, ApiLoginException
+from api import ApiClient, LoginError
 
 
 def get_api_client(unauthorized=False):
@@ -9,12 +9,19 @@ def get_api_client(unauthorized=False):
         return get_real_api_client()
 
     class MockResponse(dict):
+        def __init__(self, *args, **kwargs):
+            super(MockResponse, self).__init__(*args, **kwargs)
+
         def __getattr__(self, item):
             return self.get(item)
 
     _md = MockResponse
 
     class MockApi(object):
+        def login(self, *args, **kwargs):
+            if unauthorized:
+                raise LoginError('Requested login failure')
+
         def search(self, prefix):
             return _md({
                 'doc': [
@@ -61,15 +68,9 @@ def get_api_client(unauthorized=False):
             })
 
     class MockApiClient(ApiClient):
-        def __init__(self, **kwargs):
+        def __init__(self):
+            super(MockApiClient, self).__init__()
             self._api = MockApi()
-            self._logged_in = False
-
-        def login(self):
-            if unauthorized:
-                raise ApiLoginException('Failed to log in: Unauthorized')
-
-            self._logged_in = True
 
     return MockApiClient()
 

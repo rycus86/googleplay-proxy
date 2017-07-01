@@ -34,7 +34,7 @@ def get_application_details(package_name):
     return jsonify(api.get_details(package_name))
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     app.run(host=os.environ.get('HTTP_HOST', '127.0.0.1'),
             port=int(os.environ.get('HTTP_PORT', '5000')),
             debug=False)

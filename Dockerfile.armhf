@@ -1,5 +1,7 @@
 FROM rycus86/armhf-alpine-qemu
 
+LABEL maintainer "Viktor Adam <rycus86@gmail.com>"
+
 RUN apk add --no-cache python py2-pip git ca-certificates
 
 ADD requirements.txt /tmp/requirements.txt

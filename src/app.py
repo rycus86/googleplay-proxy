@@ -1,23 +1,33 @@
-import os
 import logging
+import os
+
 from flask import Flask, jsonify
 from flask_cache import Cache
 from flask_cors import CORS
 
 from api import ApiClient
+from scraper import Scraper
 
 app = Flask(__name__)
 cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 CORS(app, origins=os.environ.get('CORS_ORIGINS', 'http://localhost:?.*').split(','), methods='GET')
 
-api = ApiClient(android_id=os.environ.get('ANDROID_ID'),
-                username=os.environ.get('GOOGLE_USERNAME'),
-                password=os.environ.get('GOOGLE_PASSWORD'),
-                max_login_retries=int(os.environ.get('MAX_LOGIN_RETRIES', '10')))
-
 logging.basicConfig(format='%(asctime)s [%(levelname)s] %(module)s.%(funcName)s - %(message)s')
 logger = logging.getLogger('googleplay-proxy')
 logger.setLevel(logging.INFO)
+
+if os.environ.get('API_TYPE', 'api') == 'api':
+    api = ApiClient(android_id=os.environ.get('ANDROID_ID'),
+                    username=os.environ.get('GOOGLE_USERNAME'),
+                    password=os.environ.get('GOOGLE_PASSWORD'),
+                    max_login_retries=int(os.environ.get('MAX_LOGIN_RETRIES', '10')))
+
+elif os.environ.get('API_TYPE', 'api') == 'scraper':
+    api = Scraper(cache_max_age=int(os.environ.get('MAX_CACHE_AGE', 24 * 60 * 60)))
+
+else:
+    logger.error('Invalid API type "%s" (valid ones are: "api" and "scraper")', os.environ.get('API_TYPE'))
+    exit(1)
 
 
 @app.route('/search/<package_prefix>')
@@ -25,6 +35,13 @@ logger.setLevel(logging.INFO)
 def search_applications(package_prefix):
     logger.info('Searching application with package prefix: %s', package_prefix)
     return jsonify(api.search(package_prefix))
+
+
+@app.route('/developer/<developer_name>')
+@cache.memoize(timeout=3600)
+def search_developer(developer_name):
+    logger.info('Searching application with developer name: %s', developer_name)
+    return jsonify(api.developer(developer_name))
 
 
 @app.route('/details/<package_name>')

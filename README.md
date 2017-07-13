@@ -40,6 +40,26 @@ The `api.ApiClient` class wraps remote calls with the following methods:
 The `app` module is responsible for the *REST* presentation layer exposing *JSON* endpoints.
 The exposed endpoints are cached using [Flask-Cache](https://pythonhosted.org/Flask-Cache).
 
+Instead of the API a *scraper* can also be used (without authentication)
+by setting the `API_TYPE` environment variable to `scraper`.
+
+Programmatically:
+```python
+api = Scraper(cache_max_age=int(os.environ.get('MAX_CACHE_AGE', 24 * 60 * 60)))
+```
+
+The exposed methods are similar to the `ApiClient` class methods:
+
+- `search(package_prefix)`:
+  Searches for applications using `package_prefix` and filters the result list to
+  only include apps whose package name starts with that prefix.
+- `developer(developer_name)`:
+  Searches for applications developed by `developer_name`.
+  Returns results in the same format as `search`.
+- `get_details(package_name)`:
+  Returns the details of the application whose package is `package_name`.
+
+
 Configuration options:
 
 - `HTTP_HOST`: the host (interface) for *Flask* to bind to (default: `127.0.0.1`)
@@ -54,6 +74,8 @@ List of endpoints:
 
 - `/search/<package_prefix>`:
   returns a list of application details whose package starts with the given prefix
+- `/developer/<developer_name>`:
+  returns a list of application details created by the given developer
 - `/details/<package_name>`:
   returns the details of the application with the given package name
 
@@ -76,6 +98,14 @@ To run it:
 ```shell
 docker run -d --name="googleplay-proxy" -p 5000:5000                       \
   -e GOOGLE_USERNAME='user' -e GOOGLE_PASSWORD='pass' -e ANDROID_ID='aid'  \
+  -e CORS_ORIGINS='http://site.example.com,*.website.com'                  \
+  rycus86/googleplay-proxy:latest
+```
+
+Or to scrape:
+```shell
+docker run -d --name="googleplay-proxy" -p 5000:5000                       \
+  -e API_TYPE=scrape                                                       \
   -e CORS_ORIGINS='http://site.example.com,*.website.com'                  \
   rycus86/googleplay-proxy:latest
 ```

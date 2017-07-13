@@ -1,7 +1,8 @@
-import time
 import logging
-from threading import Lock
+import time
 from functools import wraps
+from threading import Lock
+
 from googleplay_api.googleplay import GooglePlayAPI, LoginError, DecodeError
 
 logging.basicConfig(format='%(asctime)s [%(levelname)s] %(module)s.%(funcName)s - %(message)s')
@@ -98,6 +99,9 @@ class ApiClient(object):
                 results.append(item)
 
         return results
+
+    def developer(self, developer_name):
+        raise NotImplementedError('Searching by developer is not supported')
 
     @_with_login
     def get_details(self, package_name):

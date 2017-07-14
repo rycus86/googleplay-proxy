@@ -5,10 +5,9 @@ import tempfile
 import time
 from hashlib import md5
 
-import six
 from bs4 import BeautifulSoup as soup
-from six.moves.urllib.parse import quote_plus
-from six.moves.urllib.request import urlopen
+from urllib import quote_plus
+from urllib2 import urlopen
 
 logging.basicConfig(format='%(asctime)s [%(levelname)s] %(module)s.%(funcName)s - %(message)s')
 logger = logging.getLogger('googleplay-proxy')
@@ -108,9 +107,7 @@ class Scraper(object):
             'creator': developer.get('title'),
 
             'description_html': '\n\n'.join(re.subn(r'\s{2,}', r' ',
-                                                    unicode(child.text if hasattr(child, 'text') else child)
-                                                    if six.PY2
-                                                    else str(child.text if hasattr(child, 'text') else child),
+                                                    unicode(child.text if hasattr(child, 'text') else child),
                                                     re.MULTILINE)[0]
                                             for child in elem.find('div', class_='description'))
                                       .strip().replace('\n', '<br/>'),
@@ -148,16 +145,18 @@ class Scraper(object):
             'share_url': self._url(html.find('link', rel='canonical').get('href')),
 
             'creator': developer.find('span', itemprop='name').text.strip(),
+            'developer_name': developer.find('span', itemprop='name').text.strip(),
+            'developer_website': elem.find('a', class_='dev-link', href=re.compile('^https?://.*')).get('href'),
 
             'description_html': ''.join(re.subn('\s{2,}', r' ',
-                                                unicode(child) if six.PY2 else str(child),
+                                                unicode(child),
                                                 re.MULTILINE)[0]
                                         for child in elem.select_one('div.show-more-content div:nth-of-type(1)')),
 
             'images': [
                 {
-                    'url': self._url(img.get('src')) for img in elem.find_all('img', class_='full-screenshot')
-                }
+                    'url': self._url(img.get('src'))
+                } for img in elem.find_all('img', class_='full-screenshot')
             ],
 
             'genres': [genre.text.strip() for genre in elem.find_all('span', itemprop='genre')],

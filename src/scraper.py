@@ -176,7 +176,7 @@ class Scraper(object):
             'recent_changes_html': '<br/>'.join(re.subn(r'\s{2,}', r' ', child.text, re.MULTILINE)[0]
                                                 for child in whats_new.find_all('div', class_='recent-change')),
 
-            'published': elem.find('div', itemprop='datePublished').text.strip(),
+            'upload_date': elem.find('div', itemprop='datePublished').text.strip(),
             'download_count': elem.find('div', itemprop='numDownloads').text.strip()
         }
 

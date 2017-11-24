@@ -5,11 +5,15 @@ from flask import Flask, jsonify
 from flask_cache import Cache
 from flask_cors import CORS
 
+from prometheus_flask_exporter import PrometheusMetrics
+
 from api import ApiClient
 from scraper import Scraper
 
 app = Flask(__name__)
 cache = Cache(app, config={'CACHE_TYPE': 'simple'})
+
+PrometheusMetrics(app)
 CORS(app, origins=os.environ.get('CORS_ORIGINS', 'http://localhost:?.*').split(','), methods='GET')
 
 logging.basicConfig(format='%(asctime)s [%(levelname)s] %(module)s.%(funcName)s - %(message)s')

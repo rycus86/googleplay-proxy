@@ -15,12 +15,12 @@ cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 metrics = PrometheusMetrics(app)
 
 metrics.info('flask_app_info', 'Application info',
-             version=os.environ.get('GIT_COMMIT', 'unknown'))
+             version=os.environ.get('GIT_COMMIT') or 'unknown')
 
 metrics.info(
     'flask_app_built_at', 'Application build timestamp'
 ).set(
-    float(os.environ.get('BUILD_TIMESTAMP', '0'))
+    float(os.environ.get('BUILD_TIMESTAMP') or '0')
 )
 
 CORS(app, origins=os.environ.get('CORS_ORIGINS', 'http://localhost:?.*').split(','), methods='GET')

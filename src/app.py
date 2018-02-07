@@ -6,6 +6,7 @@ from flask_cache import Cache
 from flask_cors import CORS
 
 from prometheus_flask_exporter import PrometheusMetrics
+from docker_helper import read_configuration
 
 from api import ApiClient
 from scraper import Scraper
@@ -23,20 +24,30 @@ metrics.info(
     float(os.environ.get('BUILD_TIMESTAMP') or '0')
 )
 
-CORS(app, origins=os.environ.get('CORS_ORIGINS', 'http://localhost:?.*').split(','), methods='GET')
+CORS(app, origins=read_configuration(
+    'CORS_ORIGINS', '/var/secrets/secrets.env', default='http://localhost:?.*'
+).split(','), methods='GET')
 
 logging.basicConfig(format='%(asctime)s [%(levelname)s] %(module)s.%(funcName)s - %(message)s')
 logger = logging.getLogger('googleplay-proxy')
 logger.setLevel(logging.INFO)
 
-if os.environ.get('API_TYPE', 'api') == 'api':
-    api = ApiClient(android_id=os.environ.get('ANDROID_ID'),
-                    username=os.environ.get('GOOGLE_USERNAME'),
-                    password=os.environ.get('GOOGLE_PASSWORD'),
-                    max_login_retries=int(os.environ.get('MAX_LOGIN_RETRIES', '10')))
+_api_type = read_configuration('API_TYPE', '/var/secrets/secrets.env', default='api')
 
-elif os.environ.get('API_TYPE', 'api') == 'scraper':
-    api = Scraper(cache_max_age=int(os.environ.get('MAX_CACHE_AGE', 24 * 60 * 60)))
+if _api_type == 'api':
+    api = ApiClient(
+        android_id=read_configuration('ANDROID_ID', '/var/secrets/secrets.env'),
+        username=read_configuration('GOOGLE_USERNAME', '/var/secrets/secrets.env'),
+        password=read_configuration('GOOGLE_PASSWORD', '/var/secrets/secrets.env'),
+        max_login_retries=int(read_configuration(
+            'MAX_LOGIN_RETRIES', '/var/secrets/secrets.env', default='10'
+        ))
+    )
+
+elif _api_type == 'scraper':
+    api = Scraper(cache_max_age=int(
+        read_configuration('MAX_CACHE_AGE', '/var/secrets/secrets.env', default=24 * 60 * 60)
+    ))
 
 else:
     logger.error('Invalid API type "%s" (valid ones are: "api" and "scraper")', os.environ.get('API_TYPE'))

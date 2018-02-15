@@ -1,5 +1,8 @@
+import os
 import json
+
 import unittest
+
 from unittest_helper import get_api_client
 
 import app
@@ -8,7 +11,12 @@ import app
 class AppTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        cls.original_api = app.api
         app.api = get_api_client()
+
+    @classmethod
+    def tearDownClass(cls):
+        app.api = cls.original_api
 
     def setUp(self):
         app.app.testing = True
@@ -53,6 +61,15 @@ class AppTest(unittest.TestCase):
         self.assertIn('developer_website', details)
         self.assertIn('version_string', details)
         self.assertIn('recent_changes_html', details)
+
+    def test_scraper_api(self):
+        os.environ['API_TYPE'] = 'scraper'
+
+        try:
+            self.assertIsInstance(app.load_api(), app.Scraper)
+
+        finally:
+            del os.environ['API_TYPE']
 
     def _verify_item(self, item, simple):
         self._verify_basics(item)
